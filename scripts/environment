@@ -1,0 +1,13 @@
+#!/bin/bash
+
+alias update='apk update && apk upgrade'
+alias l='ls -CF'
+alias la='ls -A'
+alias ll='ls -alF'
+alias ls='ls --color=auto'
+source /etc/profile.d/bash_completion.sh
+
+export HISTTIMEFORMAT="%d/%m/%y %T "
+export PS1="\[\033[35m\]\t\[\033[m\]-\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[\033[33;1m\]\w\[\033[m\]\$ "
+
+

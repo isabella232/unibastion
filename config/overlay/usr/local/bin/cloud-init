@@ -1,0 +1,38 @@
+#!/bin/sh
+
+metadata_url=http://169.254.169.254/latest/metadata
+run_dir=/var/run/user-data-env
+
+install -d -m 755 "${run_dir}/lock"
+
+if ! curl -sf -o /etc/instance-id "${metadata_url}/instance-id"; then
+	echo "ERROR: metadata service is not available." >&2
+	exit 1
+fi
+
+instance_id=$(cat /etc/instance-id)
+if [ -f "${run_dir}/lock/${instance_id}" ]; then
+	echo "WARN: user-data-env has already configured this system ($instance_id)." >&2
+	exit 0
+fi
+
+touch ${run_dir}/lock/$instance_id
+
+root_ssh_key=$(mktemp)
+trap "rm -f $root_ssh_key" EXIT
+curl -sf "${metadata_url}/public-keys/0/openssh-key" > "${root_ssh_key}"
+if grep -q '^ssh-' "${root_ssh_key}"; then
+	if ! grep -q -f "${root_ssh_key}" /root/.ssh/authorized_keys; then
+		echo "NOTICE: Installing ssh key for root." >&2
+		install -m 600 -o root -g root "${root_ssh_key}" \
+			/root/.ssh/authorized_keys
+	else
+		echo "NOTICE: Ignoring duplicate ssh key for root." >&2
+	fi
+fi
+
+hostname=$(curl -sf "${metadata_url}/hostname")
+if [ -n "$hostname" ]; then
+	echo "NOTICE: Setting hostname to \"$hostname\"."
+	hostname $hostname
+fi

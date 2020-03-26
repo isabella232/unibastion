@@ -1,0 +1,11 @@
+#!/bin/sh
+
+case "$1" in
+	start)
+		/usr/local/bin/cloud-init
+	;;
+	*)
+		echo "Option not supported" >&2
+		exit 3
+	;;
+esac

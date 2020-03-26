@@ -1,0 +1,2 @@
+name: bastion
+desc: SSH Bastion configuration for secure access to private networks.
